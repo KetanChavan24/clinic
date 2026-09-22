@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Clinic Automation Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EAF0EC;
+    --surface: #FFFFFF;
+    --ink: #15241E;
+    --ink-soft: #4B5C54;
+    --primary: #1F6F5C;
+    --primary-deep: #12433A;
+    --accent: #E2664B;
+    --line: #C7D3CB;
+    --chat-bg: #DCF3E3;
+    --chat-bubble-in: #FFFFFF;
+    --chat-bubble-out: #D8F0DD;
+    --radius: 14px;
+    --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-sizing: border-box;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #10201A;
+      --surface: #17281F;
+      --ink: #EAF3EC;
+      --ink-soft: #9FB3A8;
+      --primary: #58C7A6;
+      --primary-deep: #8FE0C4;
+      --accent: #F08165;
+      --line: #2A3D33;
+      --chat-bg: #142A20;
+      --chat-bubble-in: #1E332A;
+      --chat-bubble-out: #235240;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10201A;
+    --surface: #17281F;
+    --ink: #EAF3EC;
+    --ink-soft: #9FB3A8;
+    --primary: #58C7A6;
+    --primary-deep: #8FE0C4;
+    --accent: #F08165;
+    --line: #2A3D33;
+    --chat-bg: #142A20;
+    --chat-bubble-in: #1E332A;
+    --chat-bubble-out: #235240;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  img, svg { max-width: 100%; }
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  header.top {
+    padding: 22px 0 8px;
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(6px);
+    z-index: 20;
+    border-bottom: 1px solid var(--line);
+  }
+  .top-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px 14px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .brand {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.3rem;
+    letter-spacing: -0.01em;
+  }
+  .brand span { color: var(--primary); }
+  .top-tag {
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+  }
+
+  /* HERO */
+  .hero {
+    padding: 48px 0 8px;
+  }
+  .hero h1 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.9rem, 5.2vw, 2.7rem);
+    line-height: 1.14;
+    margin: 0 0 16px;
+    max-width: 15ch;
+  }
+  .hero p.lead {
+    font-size: 1.05rem;
+    color: var(--ink-soft);
+    max-width: 46ch;
+    margin: 0 0 30px;
+  }
+
+  /* PHONE MOCK */
+  .phone {
+    width: min(300px, 84vw);
+    margin: 0 auto;
+    border: 1px solid var(--line);
+    border-radius: 30px;
+    background: var(--surface);
+    box-shadow: 0 18px 40px -22px rgba(0,0,0,0.35);
+    overflow: hidden;
+  }
+  .phone-head {
+    background: var(--primary-deep);
+    color: #fff;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .phone-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.85rem; font-weight: 600;
+  }
+  .phone-head .who { font-weight: 600; font-size: 0.92rem; }
+  .phone-head .status { font-size: 0.72rem; opacity: 0.8; }
+  .phone-body {
+    background: var(--chat-bg);
+    min-height: 300px;
+    padding: 16px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .bubble {
+    max-width: 82%;
+    padding: 9px 12px;
+    border-radius: 12px;
+    font-size: 0.86rem;
+    opacity: 0;
+    transform: translateY(6px);
+    animation: rise 0.4s ease forwards;
+  }
+  .bubble.in {
+    background: var(--chat-bubble-in);
+    align-self: flex-start;
+    border-bottom-left-radius: 3px;
+  }
+  .bubble.out {
+    background: var(--chat-bubble-out);
+    align-self: flex-end;
+    border-bottom-right-radius: 3px;
+  }
+  .bubble .time { display:block; font-size: 0.65rem; color: var(--ink-soft); margin-top: 3px; text-align: right; }
+  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+  .replay-row { padding: 14px 16px 18px; text-align: center; }
+  button.ghost {
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--primary);
+    background: transparent;
+    border: 1px solid var(--primary);
+    border-radius: 999px;
+    padding: 8px 18px;
+    cursor: pointer;
+  }
+  button.ghost:hover { background: color-mix(in srgb, var(--primary) 10%, transparent); }
+
+  .stat-row {
+    display: flex;
+    gap: 28px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 40px 0 8px;
+  }
+  .stat { text-align: center; }
+  .stat .num {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    color: var(--primary);
+  }
+  .stat .lbl { font-size: 0.78rem; color: var(--ink-soft); max-width: 16ch; }
+  .stat-note { text-align:center; font-size: 0.72rem; color: var(--ink-soft); margin-top: 6px; }
+
+  /* SECTIONS */
+  section.module { padding: 64px 0; border-top: 1px solid var(--line); }
+  .module-head { margin-bottom: 28px; }
+  .module-kicker { color: var(--primary); font-weight: 600; font-size: 0.85rem; }
+  .module h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.5rem, 3.6vw, 1.9rem);
+    margin: 6px 0 10px;
+  }
+  .module p.desc { color: var(--ink-soft); max-width: 52ch; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 22px;
+  }
+
+  /* BOOKING WIDGET */
+  .days {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin: 16px 0;
+  }
+  .day-btn {
+    font-family: var(--font-body);
+    border: 1px solid var(--line);
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 10px 4px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 0.82rem;
+    color: var(--ink);
+  }
+  .day-btn .dname { display:block; font-size: 0.68rem; color: var(--ink-soft); }
+  .day-btn.active { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 14%, var(--surface)); font-weight: 600; }
+  .slots { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+  .slot-btn {
+    border: 1px solid var(--line);
+    background: var(--bg);
+    border-radius: 999px;
+    padding: 7px 14px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .slot-btn.taken { opacity: 0.35; text-decoration: line-through; cursor: not-allowed; }
+  .slot-btn.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .confirm-btn {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.88rem;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 20px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 6px;
+  }
+  .confirm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .toast {
+    margin-top: 14px;
+    background: color-mix(in srgb, var(--primary) 14%, var(--surface));
+    border: 1px solid var(--primary);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 0.85rem;
+    display: none;
+  }
+  .toast.show { display: block; }
+
+  footer.cta {
+    padding: 60px 0 80px;
+    text-align: center;
+  }
+  footer.cta h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    font-size: clamp(1.6rem, 4vw, 2.1rem);
+    max-width: 18ch;
+    margin: 0 auto 14px;
+  }
+  footer.cta p { color: var(--ink-soft); max-width: 42ch; margin: 0 auto 22px; }
+  .cta-btn {
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.95rem;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 14px 26px;
+    cursor: pointer;
+  }
+  .fineprint { margin-top: 18px; font-size: 0.72rem; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">🩺 Clinic Automation</div>
+    <div class="top-tag">for clinics that hate no-shows</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="hero">
+    <h1>Your clinic, minus the missed calls and no-shows.</h1>
+    <p class="lead">One system that books appointments and reminds patients automatically on WhatsApp — so your front desk isn't drowning in phone calls.</p>
+
+    <div class="phone">
+      <div class="phone-head">
+        <div class="phone-avatar">🩺</div>
+        <div>
+          <div class="who">Appointment Reminder</div>
+          <div class="status">automated message</div>
+        </div>
+      </div>
+      <div class="phone-body" id="chatBody"></div>
+      <div class="replay-row">
+        <button class="ghost" id="replayBtn">▸ Replay reminder</button>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat"><div class="num">↓ no-shows</div><div class="lbl">with automatic reminders sent a day before</div></div>
+      <div class="stat"><div class="num">24/7</div><div class="lbl">patients can book without calling in</div></div>
+      <div class="stat"><div class="num">0</div><div class="lbl">extra staff needed to run it</div></div>
+    </div>
+    <p class="stat-note">Illustrative — actual numbers depend on your clinic's current setup.</p>
+  </section>
+
+  <section class="module" id="booking">
+    <div class="module-head">
+      <div class="module-kicker">Module 1</div>
+      <h2>A booking page patients can use anytime</h2>
+      <p class="desc">No app to download. Patients pick a day and time, get instant confirmation, and your desk sees it appear on the schedule — even at 11pm when the clinic's closed.</p>
+    </div>
+    <div class="card">
+      <div style="font-size:0.85rem; color:var(--ink-soft); margin-bottom:4px;">Choose a day</div>
+      <div class="days" id="dayRow"></div>
+      <div style="font-size:0.85rem; color:var(--ink-soft); margin-bottom:4px;">Available slots</div>
+      <div class="slots" id="slotRow"></div>
+      <button class="confirm-btn" id="confirmBtn" disabled>Confirm appointment</button>
+      <div class="toast" id="bookToast"></div>
+    </div>
+  </section>
+
+  <section class="module" id="reminders">
+    <div class="module-head">
+      <div class="module-kicker">Module 2</div>
+      <h2>WhatsApp reminders that send themselves</h2>
+      <p class="desc">A message goes out the evening before every appointment, and again a couple hours ahead if there's no reply. Patients confirm or reschedule by texting back — nobody on your team has to dial a single number.</p>
+    </div>
+    <div class="card" style="font-size:0.9rem; color:var(--ink-soft);">
+      Scroll up and hit <strong>Replay reminder</strong> to see exactly what a patient receives — that same flow runs automatically, every day, for every booked slot.
+    </div>
+  </section>
+
+  <footer class="cta">
+    <h2>Want this running for your clinic?</h2>
+    <p>I'll set this up for your clinic to trial free, with your own branding and patient list — no commitment until you see it working.</p>
+    <button class="cta-btn" onclick="alert('Add your phone number / WhatsApp link here before sharing this page.')">Book a free pilot</button>
+    <div class="fineprint">Demo data only — no real patient information is used on this page.</div>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  // --- Chat reminder animation ---
+  var chatBody = document.getElementById('chatBody');
+  var messages = [
+    {side:'in', text:"Hi Priya, this is a reminder for your appointment tomorrow at 5:30 PM.", time:"6:02 PM"},
+    {side:'in', text:"Reply YES to confirm or RESCHEDULE if you need a new time.", time:"6:02 PM"},
+    {side:'out', text:"YES", time:"6:14 PM"},
+    {side:'in', text:"Great, you're confirmed for tomorrow, 5:30 PM. See you then!", time:"6:14 PM"}
+  ];
+
+  function playChat(){
+    chatBody.innerHTML = '';
+    messages.forEach(function(m, i){
+      setTimeout(function(){
+        var el = document.createElement('div');
+        el.className = 'bubble ' + m.side;
+        el.innerHTML = m.text + '<span class="time">' + m.time + '</span>';
+        chatBody.appendChild(el);
+        chatBody.scrollTop = chatBody.scrollHeight;
+      }, i * 650);
+    });
+  }
+  playChat();
+  document.getElementById('replayBtn').addEventListener('click', playChat);
+
+  // --- Booking widget ---
+  var dayNames = ['Mon','Tue','Wed','Thu','Fri'];
+  var dayRow = document.getElementById('dayRow');
+  var slotRow = document.getElementById('slotRow');
+  var confirmBtn = document.getElementById('confirmBtn');
+  var toast = document.getElementById('bookToast');
+  var selectedDay = 0, selectedSlot = null;
+
+  var slotsByDay = [
+    ['9:00 AM','9:30 AM','10:00 AM','11:30 AM','4:00 PM','5:30 PM'],
+    ['9:30 AM','10:30 AM','12:00 PM','2:00 PM','5:00 PM'],
+    ['9:00 AM','11:00 AM','11:30 AM','3:30 PM','4:30 PM','6:00 PM'],
+    ['10:00 AM','10:30 AM','1:00 PM','2:30 PM','5:30 PM'],
+    ['9:00 AM','9:30 AM','12:30 PM','4:00 PM']
+  ];
+  var takenIdx = [1,3];
+
+  dayNames.forEach(function(d, i){
+    var b = document.createElement('button');
+    b.className = 'day-btn' + (i===0 ? ' active' : '');
+    b.innerHTML = (12 + i) + '<span class="dname">' + d + '</span>';
+    b.addEventListener('click', function(){ selectDay(i); });
+    dayRow.appendChild(b);
+  });
+
+  function selectDay(i){
+    selectedDay = i; selectedSlot = null;
+    Array.from(dayRow.children).forEach(function(b, idx){ b.classList.toggle('active', idx===i); });
+    renderSlots();
+    updateConfirm();
+    toast.classList.remove('show');
+  }
+
+  function renderSlots(){
+    slotRow.innerHTML = '';
+    slotsByDay[selectedDay].forEach(function(s, idx){
+      var b = document.createElement('button');
+      b.className = 'slot-btn' + (takenIdx.indexOf(idx) > -1 ? ' taken' : '');
+      b.textContent = s;
+      if (takenIdx.indexOf(idx) === -1){
+        b.addEventListener('click', function(){
+          selectedSlot = s;
+          Array.from(slotRow.children).forEach(function(sb){ sb.classList.remove('active'); });
+          b.classList.add('active');
+          updateConfirm();
+        });
+      }
+      slotRow.appendChild(b);
+    });
+  }
+  renderSlots();
+
+  function updateConfirm(){
+    confirmBtn.disabled = !selectedSlot;
+  }
+
+  confirmBtn.addEventListener('click', function(){
+    if (!selectedSlot) return;
+    toast.textContent = 'Booked for ' + dayNames[selectedDay] + ' at ' + selectedSlot + '. A WhatsApp confirmation just went out automatically.';
+    toast.classList.add('show');
+  });
+
+})();
+</script>
+
+</body>
+</html>
